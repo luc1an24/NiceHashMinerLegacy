@@ -281,6 +281,79 @@ namespace XmrStak
                     header += "\n// \"DeviceUUIDs\" is used to check if we have same devices and should not be edited.";
                     header += "\n// \"CachedConfig\" can be edited as it is used as config template (edit this only if you know what you are doing)";
                     header += "\n// If \"DeviceUUIDs\" is different (new devices added or old ones removed) this file will be overwritten and \"CachedConfig\" will be set to defaults.";
+                    header += "\n";
+                    if (deviceType == DeviceType.CPU)
+                    {
+                        header += "\n// Thread configuration for each thread.";
+                        header += "\n// low_power_mode - This can either be a boolean (true or false), or a number between 1 to 5. When set to true";
+                        header += "\n// \t\t\t\t\tthis mode will double the cache usage, and double the single thread performance. It will";
+                        header += "\n// \t\t\t\t\tconsume much less power (as less cores are working), but will max out at around 80-85% of";
+                        header += "\n// \t\t\t\t\tthe maximum performance. When set to a number N greater than 1, this mode will increase the";
+                        header += "\n// \t\t\t\t\tcache usage and single thread performance by N times.";
+                        header += "\n";
+                        header += "\n// no_prefetch    - Some systems can gain up to extra 5% here, but sometimes it will have no difference or make";
+                        header += "\n// \t\t\t\t\tthings slower.";
+                        header += "\n";
+                        header += "\n// asm            - Allow to switch to a assembler version of cryptonight_v8; allowed value [auto, off, intel_avx, amd_avx]";
+                        header += "\n// \t\t\t\t\t  - auto: xmr-stak will automatically detect the asm type (default)";
+                        header += "\n// \t\t\t\t\t  - off: disable the usage of optimized assembler";
+                        header += "\n// \t\t\t\t\t  - intel_avx: supports Intel cpus with avx instructions e.g. Xeon v2, Core i7/i5/i3 3xxx, Pentium G2xxx, Celeron G1xxx";
+                        header += "\n// \t\t\t\t\t  - amd_avx: supports AMD cpus with avx instructions e.g. AMD Ryzen 1xxx and 2xxx series";
+                        header += "\n";
+                        header += "\n// affine_to_cpu  - This can be either false (no affinity), or the CPU core number. Note that on hyperthreading";
+                        header += "\n// \t\t\t\t\tsystems it is better to assign threads to physical cores. On Windows this usually means selecting";
+                        header += "\n// \t\t\t\t\teven or odd numbered cpu numbers. For Linux it will be usually the lower CPU numbers, so for a 4";
+                        header += "\n// \t\t\t\t\tphysical core CPU you should select cpu numbers 0-3.";
+                    }
+                    else if (deviceType == DeviceType.NVIDIA)
+                    {
+                        header += "\n// GPU configuration. You should play around with threads and blocks as the fastest settings will vary.";
+                        header += "\n// index         - GPU index number usually starts from 0.";
+                        header += "\n// threads       - Number of GPU threads (nothing to do with CPU threads).";
+                        header += "\n// blocks        - Number of GPU blocks (nothing to do with CPU threads).";
+                        header += "\n// bfactor       - Enables running the Cryptonight kernel in smaller pieces.";
+                        header += "\n// \t\t\t\t\tIncrease if you want to reduce GPU lag. Recommended setting on GUI systems - 8";
+                        header += "\n// bsleep        - Insert a delay of X microseconds between kernel launches.";
+                        header += "\n// \t\t\t\t\tIncrease if you want to reduce GPU lag. Recommended setting on GUI systems - 100";
+                        header += "\n// affine_to_cpu - This will affine the thread to a CPU. This can make a GPU miner play along nicer with a CPU miner.";
+                        header += "\n// sync_mode     - method used to synchronize the device";
+                        header += "\n// \t\t\t\t\tdocumentation: http://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html#group__CUDART__DEVICE_1g69e73c7dda3fc05306ae7c811a690fac";
+                        header += "\n// \t\t\t\t\t0 = cudaDeviceScheduleAuto";
+                        header += "\n// \t\t\t\t\t1 = cudaDeviceScheduleSpin - create a high load on one cpu thread per gpu";
+                        header += "\n// \t\t\t\t\t2 = cudaDeviceScheduleYield";
+                        header += "\n// \t\t\t\t\t3 = cudaDeviceScheduleBlockingSync (default)";
+                        header += "\n// mem_mode      - select the memory access pattern (this option has only a meaning for cryptonight_v8 and monero)";
+                        header += "\n// \t\t\t\t\t0 = 64bit memory loads";
+                        header += "\n// \t\t\t\t\t1 = 256bit memory loads";
+                    }
+                    else if (deviceType == DeviceType.AMD)
+                    {
+                        header += "\n// GPU configuration. You should play around with threads and blocks as the fastest settings will vary.";
+                        header += "\n// index         - GPU index number usually starts from 0.";
+                        header += "\n// intensity     - Number of parallel GPU threads (nothing to do with CPU threads)";
+                        header += "\n// worksize      - Number of local GPU threads (nothing to do with CPU threads)";
+                        header += "\n// affine_to_cpu - This will affine the thread to a CPU. This can make a GPU miner play along nicer with a CPU miner.";
+                        header += "\n// strided_index - switch memory pattern used for the scratchpad memory";
+                        header += "\n// \t\t\t\t\t3 = chunked memory, chunk size based on the 'worksize'";
+                        header += "\n// \t\t\t\t\t    required: intensity must be a multiple of worksize";
+                        header += "\n// \t\t\t\t\t2 = chunked memory, chunk size is controlled by 'mem_chunk'";
+                        header += "\n// \t\t\t\t\t    required: intensity must be a multiple of worksize";
+                        header += "\n// \t\t\t\t\t1 or true  = use 16 byte contiguous memory per thread, the next memory block has offset of intensity blocks";
+                        header += "\n// \t\t\t\t\t            (for cryptonight_v8 and monero it is equal to strided_index = 0)";
+                        header += "\n// \t\t\t\t\t0 or false = use a contiguous block of memory per thread";
+                        header += "\n// mem_chunk     - range 0 to 18: set the number of elements (16byte) per chunk";
+                        header += "\n// \t\t\t\t\tthis value is only used if 'strided_index' == 2";
+                        header += "\n// \t\t\t\t\telement count is computed with the equation: 2 to the power of 'mem_chunk' e.g. 4 means a chunk of 16 elements(256 byte)";
+                        header += "\n// unroll        - allow to control how often the POW main loop is unrolled; valid range [1;128) - for most OpenCL implementations it must be a power of two.";
+                        header += "\n// comp_mode     - Compatibility enable/disable the automatic guard around compute kernel which allows";
+                        header += "\n// \t\t\t\t\tto use an intensity which is not the multiple of the worksize.";
+                        header += "\n// \t\t\t\t\tIf you set false and the intensity is not multiple of the worksize the miner can crash:";
+                        header += "\n// \t\t\t\t\tin this case set the intensity to a multiple of the worksize or activate comp_mode.";
+                        header += "\n// interleave    - Controls the starting point in time between two threads on the same GPU device relative to the last started thread.";
+                        header += "\n// \t\t\t\t\tThis option has only an effect if two compute threads using the same GPU device: valid range [0;100]";
+                        header += "\n// \t\t\t\t\t0  = disable thread interleaving";
+                        header += "\n// \t\t\t\t\t40 = each working thread waits until 40% of the hash calculation of the previously started thread is finished";
+                    }
                     header += "\n\n";
                     var jsonText = JsonConvert.SerializeObject(cachedSettings, Formatting.Indented);
                     var headerWithConfigs = header + jsonText;
